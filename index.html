@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Card</title>
+<style>
+  .product-card {
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+    margin: 20px auto;
+    position: relative; /* Для абсолютного позиционирования точек */
+  }
+  
+  .product-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: opacity 0.5s ease;
+  }
+  
+  .dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #bbb;
+    margin: 0 5px;
+    cursor: pointer;
+  }
+  
+  .dot.active {
+    background-color: #333;
+  }
+</style>
+</head>
+<body>
+
+<div class="product-card" id="product-card">
+  <img class="product-image" src="image1.jpg" alt="Product Image">
+  <div class="dots-container"></div>
+</div>
+
+<script>
+  const images = [
+    'https://simg.marwin.kz/media/catalog/product/cache/550cf8d20d514ab5650dc2adb71f19c7/migrated/article/21246/14_tn3.jpg',
+    'https://simg.marwin.kz/media/catalog/product/cache/550cf8d20d514ab5650dc2adb71f19c7/9/1/9113585844254.jpg',
+    'https://simg.marwin.kz/media/catalog/product/cache/550cf8d20d514ab5650dc2adb71f19c7/migrated/article/19520/57_tn3.jpg'
+  ]; // Поменяйте на ваши изображения
+  
+  const productCard = document.getElementById('product-card');
+  const productImage = productCard.querySelector('.product-image');
+  const dotsContainer = productCard.querySelector('.dots-container');
+  let currentImageIndex = 0;
+  let intervalId;
+  let touchStartX = 0;
+  let touchEndX = 0;
+  
+  // Создание точек для переключения
+  images.forEach((image, index) => {
+    const dot = document.createElement('span');
+    dot.classList.add('dot');
+    if (index === 0) dot.classList.add('active');
+    dot.addEventListener('click', () => {
+      showImage(index);
+    });
+    dotsContainer.appendChild(dot);
+  });
+  
+  // Функция для отображения изображения по индексу
+  function showImage(index) {
+    if (index >= 0 && index < images.length) {
+      productImage.style.opacity = 0;
+      setTimeout(() => {
+        productImage.src = images[index];
+        productImage.style.opacity = 1;
+      }, 500);
+      document.querySelector('.dot.active').classList.remove('active');
+      document.querySelectorAll('.dot')[index].classList.add('active');
+      currentImageIndex = index;
+    }
+  }
+  
+  // Функция для автоматической смены изображений
+  function startAutoSlide() {
+    intervalId = setInterval(() => {
+      currentImageIndex = (currentImageIndex + 1) % images.length;
+      showImage(currentImageIndex);
+    }, 1000);
+  }
+  
+  function stopAutoSlide() {
+    clearInterval(intervalId);
+  }
+  
+  // Обработчики событий для начала и остановки автоматической смены изображений
+  productCard.addEventListener('mouseenter', startAutoSlide);
+  productCard.addEventListener('mouseleave', stopAutoSlide);
+  
+  // Обработчик события для возвращения к первому изображению при уходе с изображения
+  productImage.addEventListener('mouseleave', () => {
+    showImage(0);
+  });
+  
+  // Обработчики событий для свайпа на мобильных устройствах
+  productCard.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+  });
+  
+  productCard.addEventListener('touchmove', (e) => {
+    touchEndX = e.touches[0].clientX;
+  });
+  
+  productCard.addEventListener('touchend', () => {
+    const swipeLength = touchEndX - touchStartX;
+    if (swipeLength > 0) {
+      // свайп вправо
+      currentImageIndex = (currentImageIndex === 0) ? images.length - 1 : currentImageIndex - 1;
+      showImage(currentImageIndex);
+    } else if (swipeLength < 0) {
+      // свайп влево
+      currentImageIndex = (currentImageIndex === images.length - 1) ? 0 : currentImageIndex + 1;
+      showImage(currentImageIndex);
+    }
+  });
+  
+  // Отображение первого изображения
+  showImage(currentImageIndex);
+</script>
+
+</body>
+</html>
